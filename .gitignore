@@ -1,0 +1,9 @@
+.claude
+.env
+.env.*
+!.env.example
+*.local
+/bin/
+/dist/
+.DS_Store
+*.pyc
