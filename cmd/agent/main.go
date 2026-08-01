@@ -17,6 +17,11 @@ const searchQuery = "headphones"
 func main() {
 	_ = godotenv.Load()
 
+	if os.Getenv("TASK") != "" {
+		runDecide()
+		return
+	}
+
 	merchants := loadMerchants()
 	if len(merchants) == 0 {
 		log.Fatal("no MERCHANT_* environment variables set")
