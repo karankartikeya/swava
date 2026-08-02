@@ -22,15 +22,15 @@ import (
 
 // Product is everything Run needs to know about what's being bought and where.
 type Product struct {
-	Description      string
-	VariantID        string
-	UnitPriceDecimal string // e.g. "22990.00" — Prava's decimal-string amount format
-	UnitPriceRupees  int    // e.g. 22990 — whole rupees, for the risk policy
-	Currency         string
-	MerchantName     string
-	MerchantURL      string
-	MerchantMCPURL   string
-	MerchantCountry  string
+	Description      string `json:"description"`
+	VariantID        string `json:"variant_id"`
+	UnitPriceDecimal string `json:"unit_price_decimal"` // e.g. "22990.00" — Prava's decimal-string amount format
+	UnitPriceRupees  int    `json:"unit_price_rupees"`  // e.g. 22990 — whole rupees, for the risk policy
+	Currency         string `json:"currency"`
+	MerchantName     string `json:"merchant_name"`
+	MerchantURL      string `json:"merchant_url"`
+	MerchantMCPURL   string `json:"merchant_mcp_url"`
+	MerchantCountry  string `json:"merchant_country"`
 }
 
 // Result is the final, screenshottable outcome of a purchase run.
@@ -48,6 +48,132 @@ const (
 	testUserID    = "test_user_1"
 	testUserEmail = "test@example.com"
 )
+
+// TrustGateResult is the outcome of the SwarmPay check alone, independent of
+// whether a Prava session followed it.
+type TrustGateResult struct {
+	WalletAddress   string        `json:"wallet_address"`
+	Known           bool          `json:"known"`
+	RawScore        int           `json:"raw_score"`
+	Tier            string        `json:"tier"`
+	NormalizedScore int           `json:"normalized_score"`
+	SpendLimit      int           `json:"spend_limit_rupees"`
+	Decision        risk.Decision `json:"decision"`
+	Reason          string        `json:"reason"`
+}
+
+// SessionResult is what CreateSandboxSession returns: the trust-gate outcome,
+// plus — only if the gate didn't block — the real Prava session and iframe
+// URL a human needs to open to carry the flow further. No blocking I/O of any
+// kind; safe to call from an HTTP handler.
+type SessionResult struct {
+	TrustGate TrustGateResult `json:"trust_gate"`
+
+	// The following are zero-valued when TrustGate.Decision == DecisionBlock,
+	// since a blocked wallet must never reach Prava at all.
+	PravaSessionID string `json:"prava_session_id,omitempty"`
+	PravaOrderID   string `json:"prava_order_id,omitempty"`
+	IframeURL      string `json:"iframe_url,omitempty"`
+	ExpiresAt      string `json:"expires_at,omitempty"`
+}
+
+// EvaluateTrustGate runs just the SwarmPay reputation check + risk policy for
+// a wallet and purchase amount — no Prava call, no side effects. Shared by
+// CreateSandboxSession and the standalone POST /api/trust-gate endpoint so
+// there is exactly one code path that talks to SwarmPay.
+func EvaluateTrustGate(walletAddress string, amountRupees int) (TrustGateResult, error) {
+	swarmpayURL := os.Getenv("SWARMPAY_API_URL")
+	if swarmpayURL == "" {
+		swarmpayURL = "http://localhost:8080"
+	}
+
+	repClient := reputation.NewClient(swarmpayURL, os.Getenv("SWARMPAY_API_KEY"))
+	repScore, err := repClient.GetScore(walletAddress)
+	if err != nil {
+		return TrustGateResult{}, fmt.Errorf("swarmpay reputation check failed: %w", err)
+	}
+
+	normalizedScore := repScore.ToNormalized()
+	policy := risk.Evaluate(repScore.Known, normalizedScore, amountRupees)
+
+	return TrustGateResult{
+		WalletAddress:   walletAddress,
+		Known:           repScore.Known,
+		RawScore:        repScore.RawScore,
+		Tier:            repScore.Tier,
+		NormalizedScore: policy.Score,
+		SpendLimit:      policy.SpendLimit,
+		Decision:        policy.Decision,
+		Reason:          policy.Reason,
+	}, nil
+}
+
+// CreateSandboxSession runs the trust gate, then — only if the decision isn't
+// DecisionBlock — creates a real Prava sandbox session and returns its
+// iframe_url. It deliberately stops there: completing the sandbox purchase
+// requires a human in a real browser to pass Visa's FIDO/passkey step (no
+// server-side path exists — confirmed live, see docs/checkout-flow-status.md),
+// so this function never blocks on stdin or polls for completion. Intended
+// for cmd/server's POST /api/purchase; the CLI's blocking Run above still
+// carries a session all the way through for local use.
+func CreateSandboxSession(product Product, walletAddress string) (SessionResult, error) {
+	gate, err := EvaluateTrustGate(walletAddress, product.UnitPriceRupees)
+	if err != nil {
+		return SessionResult{}, err
+	}
+
+	if gate.Decision == risk.DecisionBlock {
+		return SessionResult{TrustGate: gate}, nil
+	}
+
+	baseURL := os.Getenv("PRAVA_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://sandbox.api.prava.space"
+	}
+	secretKey := os.Getenv("PRAVA_SECRET_KEY")
+	if secretKey == "" {
+		return SessionResult{}, fmt.Errorf("PRAVA_SECRET_KEY is not set")
+	}
+
+	client := payments.NewClient(baseURL, secretKey)
+
+	sessionReq := payments.CreateSessionRequest{
+		UserID:      testUserID,
+		UserEmail:   testUserEmail,
+		TotalAmount: product.UnitPriceDecimal,
+		Currency:    product.Currency,
+		PurchaseContext: []payments.PurchaseContext{
+			{
+				MerchantDetails: payments.MerchantDetails{
+					Name:            product.MerchantName,
+					URL:             product.MerchantURL,
+					CountryCodeISO2: product.MerchantCountry,
+				},
+				ProductDetails: []payments.ProductDetails{
+					{
+						Description: product.Description,
+						UnitPrice:   product.UnitPriceDecimal,
+						Quantity:    1,
+					},
+				},
+			},
+		},
+		IntegrationType: "full_checkout",
+	}
+
+	session, _, err := client.CreateSession(sessionReq)
+	if err != nil {
+		return SessionResult{}, fmt.Errorf("create-session failed: %w", err)
+	}
+
+	return SessionResult{
+		TrustGate:      gate,
+		PravaSessionID: session.SessionID,
+		PravaOrderID:   session.OrderID,
+		IframeURL:      session.IframeURL,
+		ExpiresAt:      session.ExpiresAt,
+	}, nil
+}
 
 // Run executes the full flow for one product against one wallet: SwarmPay
 // trust gate first (a blocked wallet never reaches Prava), then create-session,
