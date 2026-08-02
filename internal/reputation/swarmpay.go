@@ -92,3 +92,51 @@ func (c *Client) GetScore(address string) (Score, error) {
 		Tier:     out.Tier,
 	}, nil
 }
+
+// Transaction is one real on-chain transfer involving a wallet.
+type Transaction struct {
+	Hash            string `json:"tx_hash"`
+	From            string `json:"from"`
+	To              string `json:"to"`
+	Value           string `json:"value"`
+	Timestamp       string `json:"timestamp"`
+	IsTokenTransfer bool   `json:"is_token_transfer"`
+	Chain           string `json:"chain"`
+}
+
+type historyResponse struct {
+	Address      string        `json:"address"`
+	Transactions []Transaction `json:"transactions"`
+}
+
+// GetHistory fetches a wallet's real, indexed transaction history. A wallet
+// with no on-chain activity returns an empty slice, never an error.
+func (c *Client) GetHistory(address string) ([]Transaction, error) {
+	req, err := http.NewRequest(http.MethodGet, c.BaseURL+"/v1/agent/"+address+"/history", nil)
+	if err != nil {
+		return nil, fmt.Errorf("build request: %w", err)
+	}
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("get history failed: status %d: %s", resp.StatusCode, body)
+	}
+
+	var out historyResponse
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, fmt.Errorf("decode history response: %w", err)
+	}
+	return out.Transactions, nil
+}

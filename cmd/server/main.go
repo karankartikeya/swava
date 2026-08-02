@@ -15,6 +15,7 @@ import (
 
 	"github.com/prava/hackathon-agent/internal/decide"
 	"github.com/prava/hackathon-agent/internal/purchase"
+	"github.com/prava/hackathon-agent/internal/reputation"
 	"github.com/prava/hackathon-agent/internal/risk"
 )
 
@@ -28,14 +29,15 @@ const walletRoleNote = "This wallet is the deployed agent's persistent economic 
 // demoWallets is the one source of truth for the three wallets the frontend
 // offers — labeled here so the frontend never hardcodes what each represents.
 var demoWallets = []DemoWallet{
-	{Address: "0xaaaa000000000000000000000000000000aaaa", Label: "Established", Description: "Seeded test fixture, score 900/1000 (AAA) — long, clean transaction history."},
-	{Address: "0xca4b519063ff7f8154fcb768259bc9059df07237", Label: "New / Moderate", Description: "Real indexed wallet, score 600/1000 (AA) — some history, not yet fully trusted."},
-	{Address: "0x9cab350e3485e3981b0e729d3cfdb90992a56e9c", Label: "Known-bad", Description: "Real indexed wallet, score 220/1000 (C) — poor history, blocked outright."},
+	{Address: "0xaaaa000000000000000000000000000000aaaa", Label: "Established", AgentRole: "Procurement Agent — Established", Description: "Seeded test fixture, score 900/1000 (AAA) — long, clean transaction history."},
+	{Address: "0xca4b519063ff7f8154fcb768259bc9059df07237", Label: "New / Moderate", AgentRole: "Procurement Agent — Alpha", Description: "Real indexed wallet, score 600/1000 (AA) — some history, not yet fully trusted."},
+	{Address: "0x9cab350e3485e3981b0e729d3cfdb90992a56e9c", Label: "Known-bad", AgentRole: "Procurement Agent — Flagged", Description: "Real indexed wallet, score 220/1000 (C) — poor history, blocked outright."},
 }
 
 type DemoWallet struct {
 	Address     string `json:"address"`
 	Label       string `json:"label"`
+	AgentRole   string `json:"agent_role"`
 	Description string `json:"description"`
 }
 
@@ -52,6 +54,7 @@ func main() {
 	mux.HandleFunc("/api/decide", withCORS(handleDecide))
 	mux.HandleFunc("/api/trust-gate", withCORS(handleTrustGate))
 	mux.HandleFunc("/api/purchase", withCORS(handlePurchase))
+	mux.HandleFunc("/api/agent-profile", withCORS(handleAgentProfile))
 
 	log.Printf("server listening on :%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, mux))
@@ -86,6 +89,74 @@ func handleWallets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, demoWallets)
+}
+
+// --- GET /api/agent-profile?address=... ---
+
+type agentProfileResponse struct {
+	Address      string                   `json:"address"`
+	AgentRole    string                   `json:"agent_role"`
+	Known        bool                     `json:"known"`
+	RawScore     int                      `json:"raw_score"`
+	Tier         string                   `json:"tier"`
+	Policy       *risk.ProcurementPolicy  `json:"policy,omitempty"`
+	Transactions []reputation.Transaction `json:"transactions"`
+}
+
+// handleAgentProfile builds a real profile for one of the demo agents: role
+// label, its own wallet identity, its trust score, and its actual indexed
+// transaction history — sparse if the wallet's real history is sparse, never
+// padded with invented rows.
+func handleAgentProfile(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "GET only")
+		return
+	}
+	address := r.URL.Query().Get("address")
+	if address == "" {
+		writeError(w, http.StatusBadRequest, "address is required")
+		return
+	}
+
+	agentRole := "Procurement Agent"
+	for _, w := range demoWallets {
+		if w.Address == address {
+			agentRole = w.AgentRole
+			break
+		}
+	}
+
+	swarmpayURL := os.Getenv("SWARMPAY_API_URL")
+	if swarmpayURL == "" {
+		swarmpayURL = "http://localhost:8080"
+	}
+	repClient := reputation.NewClient(swarmpayURL, os.Getenv("SWARMPAY_API_KEY"))
+
+	score, err := repClient.GetScore(address)
+	if err != nil {
+		writeError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	txs, err := repClient.GetHistory(address)
+	if err != nil {
+		writeError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+
+	var policy *risk.ProcurementPolicy
+	if p, ok := risk.PolicyFor(address); ok {
+		policy = &p
+	}
+
+	writeJSON(w, http.StatusOK, agentProfileResponse{
+		Address:      address,
+		AgentRole:    agentRole,
+		Known:        score.Known,
+		RawScore:     score.RawScore,
+		Tier:         score.Tier,
+		Policy:       policy,
+		Transactions: txs,
+	})
 }
 
 // --- POST /api/decide ---
@@ -144,7 +215,7 @@ func handleTrustGate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gate, err := purchase.EvaluateTrustGate(req.WalletAddress, req.AmountRupees)
+	gate, err := purchase.EvaluateTrustGate(req.WalletAddress, req.AmountRupees, "")
 	if err != nil {
 		writeError(w, http.StatusBadGateway, err.Error())
 		return

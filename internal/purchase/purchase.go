@@ -60,6 +60,9 @@ type TrustGateResult struct {
 	SpendLimit      int           `json:"spend_limit_rupees"`
 	Decision        risk.Decision `json:"decision"`
 	Reason          string        `json:"reason"`
+	// Policy is the configured procurement policy applied for this wallet,
+	// if any — omitted entirely when the wallet has no policy configured.
+	Policy *risk.ProcurementPolicy `json:"policy,omitempty"`
 }
 
 // SessionResult is what CreateSandboxSession returns: the trust-gate outcome,
@@ -80,8 +83,10 @@ type SessionResult struct {
 // EvaluateTrustGate runs just the SwarmPay reputation check + risk policy for
 // a wallet and purchase amount — no Prava call, no side effects. Shared by
 // CreateSandboxSession and the standalone POST /api/trust-gate endpoint so
-// there is exactly one code path that talks to SwarmPay.
-func EvaluateTrustGate(walletAddress string, amountRupees int) (TrustGateResult, error) {
+// there is exactly one code path that talks to SwarmPay. productDescription
+// is used only to check any configured procurement-policy keyword block for
+// this wallet; pass "" when there's no specific product in play yet.
+func EvaluateTrustGate(walletAddress string, amountRupees int, productDescription string) (TrustGateResult, error) {
 	swarmpayURL := os.Getenv("SWARMPAY_API_URL")
 	if swarmpayURL == "" {
 		swarmpayURL = "http://localhost:8080"
@@ -94,7 +99,7 @@ func EvaluateTrustGate(walletAddress string, amountRupees int) (TrustGateResult,
 	}
 
 	normalizedScore := repScore.ToNormalized()
-	policy := risk.Evaluate(repScore.Known, normalizedScore, amountRupees)
+	policy := risk.Evaluate(repScore.Known, normalizedScore, amountRupees, walletAddress, productDescription)
 
 	return TrustGateResult{
 		WalletAddress:   walletAddress,
@@ -105,6 +110,7 @@ func EvaluateTrustGate(walletAddress string, amountRupees int) (TrustGateResult,
 		SpendLimit:      policy.SpendLimit,
 		Decision:        policy.Decision,
 		Reason:          policy.Reason,
+		Policy:          policy.Policy,
 	}, nil
 }
 
@@ -117,7 +123,7 @@ func EvaluateTrustGate(walletAddress string, amountRupees int) (TrustGateResult,
 // for cmd/server's POST /api/purchase; the CLI's blocking Run above still
 // carries a session all the way through for local use.
 func CreateSandboxSession(product Product, walletAddress string) (SessionResult, error) {
-	gate, err := EvaluateTrustGate(walletAddress, product.UnitPriceRupees)
+	gate, err := EvaluateTrustGate(walletAddress, product.UnitPriceRupees, product.Description)
 	if err != nil {
 		return SessionResult{}, err
 	}
@@ -194,7 +200,7 @@ func Run(product Product, walletAddress string) Result {
 	}
 
 	normalizedScore := repScore.ToNormalized()
-	policy := risk.Evaluate(repScore.Known, normalizedScore, product.UnitPriceRupees)
+	policy := risk.Evaluate(repScore.Known, normalizedScore, product.UnitPriceRupees, walletAddress, product.Description)
 
 	fmt.Println("=== 0. SwarmPay trust gate ===")
 	fmt.Printf("wallet:           %s\n", walletAddress)
