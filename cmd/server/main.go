@@ -60,11 +60,25 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
+// allowedOrigins is the explicit CORS allowlist: the deployed frontend plus
+// local Vite dev. A wildcard ("*") can't be paired with credentialed
+// requests and can't express "these two specific origins" — echoing back
+// the request's Origin only when it matches this list is the standard
+// pattern for a small, known set of frontends.
+var allowedOrigins = map[string]bool{
+	"https://swava.vercel.app": true,
+	"http://localhost:5173":    true,
+}
+
 func withCORS(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		origin := r.Header.Get("Origin")
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+		}
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return
