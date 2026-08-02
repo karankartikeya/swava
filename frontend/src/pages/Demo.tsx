@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { api, BASE } from "../lib/api";
 import type { AgentProfile, DecideResult, DemoWallet, PurchaseResult } from "../lib/api";
 import { Section, Eyebrow, DecisionBadge, decisionMetaFor } from "../components/ui";
 import { FAQ } from "../components/FAQ";
@@ -93,6 +93,10 @@ export function Demo() {
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
           Every call below hits the real backend — real merchant search, a real Agent
           Trust Score, a real procurement policy check, a real Prava sandbox session.
+        </p>
+        {/* TEMPORARY DEBUG LINE — remove once VITE_API_BASE is confirmed correct in prod. */}
+        <p className="mt-3 font-mono text-xs text-ink-faint">
+          API base: {BASE}
         </p>
       </Section>
 

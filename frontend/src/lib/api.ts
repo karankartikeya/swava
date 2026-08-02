@@ -94,7 +94,7 @@ export interface PurchaseResult {
   sandbox_note?: string;
 }
 
-const BASE = import.meta.env.VITE_API_BASE ?? "/api";
+export const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
