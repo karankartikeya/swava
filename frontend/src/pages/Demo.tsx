@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import type { DecideResult, DemoWallet, PurchaseResult } from "../lib/api";
 import { Section, Eyebrow, DecisionBadge, decisionMetaFor } from "../components/ui";
+import { FAQ } from "../components/FAQ";
 import { IconSearch, IconCheck, IconCard } from "../components/icons";
 
 type Phase = "idle" | "deciding" | "decided" | "purchasing" | "purchased" | "error";
@@ -117,6 +118,10 @@ export function Demo() {
           <PaymentOutcome result={purchaseResult} />
         </Section>
       )}
+
+      <Section className="mt-16">
+        <FAQ />
+      </Section>
     </div>
   );
 }

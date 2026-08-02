@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Section, Eyebrow } from "../components/ui";
+import { FAQ } from "../components/FAQ";
 import {
   IconTask,
   IconSearch,
@@ -36,6 +37,10 @@ export function HowItWorks() {
             <StepRow key={step.title} index={i + 1} {...step} />
           ))}
         </div>
+      </Section>
+
+      <Section className="mt-16">
+        <FAQ />
       </Section>
 
       <Section className="mt-16">

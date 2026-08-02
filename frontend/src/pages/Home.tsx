@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Section, Eyebrow } from "../components/ui";
 import { Pipeline } from "../components/Pipeline";
+import { FAQ } from "../components/FAQ";
 import {
   IconTask,
   IconSearch,
@@ -76,6 +77,10 @@ export function Home() {
       </Section>
 
       <Section className="mt-20">
+        <FAQ />
+      </Section>
+
+      <Section className="mt-16">
         <div className="rounded-3xl border border-line-strong bg-signal px-8 py-10 text-paper sm:px-12">
           <h2 className="max-w-lg font-display text-2xl font-semibold sm:text-3xl">
             Watch an agent get scored, gated, and (almost) pay for something.
