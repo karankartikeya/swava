@@ -87,15 +87,14 @@ export function Demo() {
     <div className="pb-24">
       <Section className="pt-16 pb-10">
         <Eyebrow>Live demo</Eyebrow>
-        <h1 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-[2.75rem]">
+        <h1 className="mt-3 max-w-2xl font-display text-4xl font-extrabold uppercase leading-[1.1] tracking-[0.02em] text-ink sm:text-[2.75rem]">
           Give an AI agent a task and a budget.
         </h1>
-        <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-          Every call below hits the real backend — real merchant search, a real Agent
-          Trust Score, a real procurement policy check, a real Prava sandbox session.
+        <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink">
+          Every call below hits the real backend.
         </p>
         {/* TEMPORARY DEBUG LINE — remove once VITE_API_BASE is confirmed correct in prod. */}
-        <p className="mt-3 font-mono text-xs text-ink-faint">
+        <p className="mt-3 font-mono text-xs text-ink">
           API base: {BASE}
         </p>
       </Section>
@@ -123,7 +122,7 @@ export function Demo() {
 
       {error && (
         <Section className="mt-8">
-          <div className="rounded-2xl border border-block bg-block-soft p-5 text-sm text-block-ink">
+          <div className="rounded-[12px] border border-block bg-block-soft p-5 text-sm text-block-ink">
             {error}
           </div>
         </Section>
@@ -171,10 +170,10 @@ function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
   return (
     <div>
       <Eyebrow>Audit timeline</Eyebrow>
-      <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-ink">
         Every decision made this session
       </h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink">
         A real, chronological record of what the Procurement Approval Engine decided —
         not a mockup, built from the same responses shown above.
       </p>
@@ -184,11 +183,11 @@ function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
           return (
             <div
               key={e.id}
-              className={`flex flex-wrap items-center gap-3 rounded-xl border px-5 py-3 text-sm ${meta.bg} ${meta.border}`}
+              className={`flex flex-wrap items-center gap-3 rounded-[6px] border px-5 py-3 text-sm ${meta.bg} ${meta.border}`}
             >
-              <span className="tabular font-mono text-xs text-ink-faint">{e.timestamp}</span>
+              <span className="tabular font-mono text-xs text-ink">{e.timestamp}</span>
               <span className="font-medium text-ink">{e.agentRole}</span>
-              <span className="text-ink-soft">{rupeeify(e.action)}</span>
+              <span className="text-ink">{rupeeify(e.action)}</span>
               <span className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${meta.text} ${meta.border}`}>
                 {meta.label}
               </span>
@@ -217,29 +216,29 @@ function AgentProfilePanel({ address, onClose }: { address: string; onClose: () 
   }, [address]);
 
   return (
-    <div className="rounded-3xl border border-line-strong bg-paper-raised p-6 sm:p-8">
+    <div className="rounded-[12px] border border-line-strong bg-paper-raised p-6 sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <Eyebrow>Agent profile</Eyebrow>
-          <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+          <h2 className="mt-2 font-display text-2xl font-extrabold text-ink">
             {profile?.agent_role ?? "Loading…"}
           </h2>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
+          className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-ink hover:bg-whisper"
         >
           Close
         </button>
       </div>
 
-      {loading && <p className="mt-6 text-sm text-ink-soft">Fetching real profile data…</p>}
+      {loading && <p className="mt-6 text-sm text-ink">Fetching real profile data…</p>}
       {err && <p className="mt-6 text-sm text-block-ink">{err}</p>}
 
       {profile && (
         <div className="mt-6 flex flex-col gap-6">
-          <div className="grid gap-px overflow-hidden rounded-2xl bg-line sm:grid-cols-3">
+          <div className="grid gap-px overflow-hidden rounded-[12px] bg-line sm:grid-cols-3">
             <Field label="Agent identity" value={`${profile.address.slice(0, 10)}…${profile.address.slice(-4)}`} sub="de-emphasized — this is not the agent's name" />
             <Field label="Agent trust score" value={profile.known ? `${profile.raw_score}/1000` : "unrated"} sub={profile.known ? `tier ${profile.tier}` : "no indexed history yet"} />
             <Field
@@ -252,7 +251,7 @@ function AgentProfilePanel({ address, onClose }: { address: string; onClose: () 
           <div>
             <div className="text-sm font-medium text-ink">Purchase history</div>
             {profile.transactions.length === 0 ? (
-              <p className="mt-2 text-sm text-ink-faint">
+              <p className="mt-2 text-sm text-ink">
                 No indexed on-chain activity for this agent yet — sparse history, shown as-is.
               </p>
             ) : (
@@ -262,12 +261,12 @@ function AgentProfilePanel({ address, onClose }: { address: string; onClose: () 
                     key={t.tx_hash}
                     className="flex flex-wrap items-center gap-3 rounded-lg border border-line px-4 py-2.5 text-xs"
                   >
-                    <span className="tabular font-mono text-ink-faint">
+                    <span className="tabular font-mono text-ink">
                       {new Date(t.timestamp).toLocaleDateString()}
                     </span>
-                    <span className="font-mono text-ink-faint">{t.tx_hash.slice(0, 10)}…</span>
-                    <span className="text-ink-soft">{t.is_token_transfer ? "token transfer" : "native transfer"}</span>
-                    <span className="ml-auto font-mono text-ink-faint">{t.chain}</span>
+                    <span className="font-mono text-ink">{t.tx_hash.slice(0, 10)}…</span>
+                    <span className="text-ink">{t.is_token_transfer ? "token transfer" : "native transfer"}</span>
+                    <span className="ml-auto font-mono text-ink">{t.chain}</span>
                   </div>
                 ))}
               </div>
@@ -303,12 +302,12 @@ function DemoForm({
   onViewProfile: (address: string) => void;
 }) {
   return (
-    <div className="rounded-3xl border border-line bg-paper-raised p-6 sm:p-8">
+    <div className="rounded-[12px] border border-line bg-paper-raised p-6 sm:p-8">
       <div className="grid gap-6 sm:grid-cols-2">
         <label className="flex flex-col gap-2">
           <span className="text-sm font-medium text-ink">Task</span>
           <input
-            className="rounded-xl border border-line-strong bg-paper px-4 py-3 text-sm text-ink outline-none focus:border-signal"
+            className="rounded-[6px] border border-line-strong bg-paper px-4 py-3 text-sm text-ink outline-none focus:border-signal"
             value={task}
             onChange={(e) => setTask(e.target.value)}
             placeholder="buy a cheap razor"
@@ -319,7 +318,7 @@ function DemoForm({
           <input
             type="number"
             min={1}
-            className="tabular rounded-xl border border-line-strong bg-paper px-4 py-3 text-sm text-ink outline-none focus:border-signal"
+            className="tabular rounded-[6px] border border-line-strong bg-paper px-4 py-3 text-sm text-ink outline-none focus:border-signal"
             value={budget}
             onChange={(e) => setBudget(Number(e.target.value))}
           />
@@ -334,17 +333,17 @@ function DemoForm({
               key={w.address}
               type="button"
               onClick={() => setWalletAddress(w.address)}
-              className={`rounded-xl border p-4 text-left transition-colors ${
+              className={`rounded-[6px] border p-4 text-left transition-colors ${
                 walletAddress === w.address
-                  ? "border-signal bg-signal-soft"
-                  : "border-line-strong bg-paper hover:border-ink-faint"
+                  ? "border-signal bg-mint"
+                  : "border-line-strong bg-paper hover:bg-whisper"
               }`}
             >
-              <div className="text-sm font-semibold text-ink">{w.agent_role}</div>
-              <div className="mt-1 font-mono text-[11px] text-ink-faint">
+              <div className="text-sm font-extrabold text-ink">{w.agent_role}</div>
+              <div className="mt-1 font-mono text-[11px] text-ink">
                 {w.address.slice(0, 8)}…{w.address.slice(-4)}
               </div>
-              <div className="mt-1.5 text-xs leading-relaxed text-ink-soft">{w.description}</div>
+              <div className="mt-1.5 text-xs leading-relaxed text-ink">{w.description}</div>
               <span
                 role="button"
                 tabIndex={0}
@@ -371,7 +370,7 @@ function DemoForm({
         type="button"
         onClick={onRun}
         disabled={running || !walletAddress}
-        className="mt-7 inline-flex items-center gap-2 rounded-full bg-signal px-6 py-3 font-medium text-paper transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="mt-7 inline-flex items-center gap-2 rounded-[6px] bg-signal px-6 py-3 font-medium text-paper transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {running ? "Running…" : "Run the agent"}
       </button>
@@ -383,43 +382,43 @@ function AgentTrail({ result, loading }: { result: DecideResult | null; loading:
   return (
     <div>
       <Eyebrow>Agent trail</Eyebrow>
-      <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-ink">
         What it searched, and why it picked what it picked
       </h2>
 
       <div className="mt-6 flex flex-col gap-3">
         {loading && !result && (
-          <div className="flex items-center gap-3 rounded-xl border border-line bg-paper-raised px-5 py-4 text-sm text-ink-soft">
+          <div className="flex items-center gap-3 rounded-[6px] border border-line bg-paper-raised px-5 py-4 text-sm text-ink">
             <Spinner /> Searching merchants live…
           </div>
         )}
         {result?.steps.map((step) => (
           <div
             key={step.merchant_name}
-            className={`rounded-xl border px-5 py-4 ${
+            className={`rounded-[6px] border px-5 py-4 ${
               step.rejected
                 ? "border-line bg-paper opacity-70"
                 : step.configured && step.reachable && !step.rejected && result.chosen_product?.merchant_name === step.merchant_name
-                  ? "border-signal bg-signal-soft"
+                  ? "border-signal bg-mint"
                   : "border-line bg-paper-raised"
             }`}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="h-4 w-4 text-ink-faint">
+              <span className="h-4 w-4 text-ink">
                 <IconSearch />
               </span>
               <span className="font-medium text-ink">{step.merchant_name}</span>
-              <span className="font-mono text-xs text-ink-faint">
+              <span className="font-mono text-xs text-ink">
                 search_catalog("{step.search_term}")
               </span>
               {step.task_match && (
-                <span className="rounded-full bg-signal-soft px-2 py-0.5 text-[11px] font-medium text-signal-ink">
+                <span className="rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-ink">
                   task match
                 </span>
               )}
             </div>
 
-            <div className="mt-2 text-sm text-ink-soft">
+            <div className="mt-2 text-sm text-ink">
               {!step.configured && "Merchant not configured — skipped."}
               {step.configured && !step.reachable && `Unreachable: ${step.error}`}
               {step.configured && step.reachable && step.found_title && (
@@ -440,7 +439,7 @@ function AgentTrail({ result, loading }: { result: DecideResult | null; loading:
         ))}
 
         {result && (
-          <div className="mt-2 rounded-xl border border-signal bg-signal px-5 py-4 text-sm text-paper">
+          <div className="mt-2 rounded-[6px] border border-signal bg-signal px-5 py-4 text-sm text-paper">
             <span className="h-4 w-4 inline-block align-text-bottom mr-2">
               <IconCheck />
             </span>
@@ -473,20 +472,20 @@ function TrustGateCenterpiece({
   return (
     <div>
       <Eyebrow>Procurement Approval Engine</Eyebrow>
-      <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-ink">
         The decision that gates the payment
       </h2>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">{walletRole}</p>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink">{walletRole}</p>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-line-strong bg-paper-raised">
+      <div className="mt-6 overflow-hidden rounded-[12px] border border-line-strong bg-paper-raised">
         {loading && !gate ? (
-          <div className="flex items-center gap-3 px-8 py-10 text-sm text-ink-soft">
+          <div className="flex items-center gap-3 px-8 py-10 text-sm text-ink">
             <Spinner /> Checking agent trust score…
           </div>
         ) : gate ? (
           <GateReadout gate={gate} wallet={wallet} product={product} />
         ) : (
-          <div className="px-8 py-10 text-sm text-ink-faint">Waiting on the decision…</div>
+          <div className="px-8 py-10 text-sm text-ink">Waiting on the decision…</div>
         )}
       </div>
     </div>
@@ -532,7 +531,7 @@ function GateReadout({
         <Field label="Decision" value={gate.decision.replace("_", " ")} />
       </div>
       <div className="border-t border-line bg-paper-raised px-6 py-5">
-        <div className="font-mono text-[11px] uppercase tracking-wide text-ink-faint">Reason</div>
+        <div className="font-mono text-[11px] uppercase tracking-wide text-ink">Reason</div>
         <div className="mt-1 text-sm text-ink">{gate.reason}</div>
       </div>
     </div>
@@ -542,9 +541,9 @@ function GateReadout({
 function Field({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="bg-paper-raised px-6 py-5">
-      <div className="font-mono text-[11px] uppercase tracking-wide text-ink-faint">{label}</div>
+      <div className="font-mono text-[11px] uppercase tracking-wide text-ink">{label}</div>
       <div className="tabular mt-1 text-base font-medium text-ink">{value}</div>
-      {sub && <div className="mt-0.5 text-xs text-ink-faint">{sub}</div>}
+      {sub && <div className="mt-0.5 text-xs text-ink">{sub}</div>}
     </div>
   );
 }
@@ -555,22 +554,20 @@ function PaymentOutcome({ result }: { result: PurchaseResult }) {
   return (
     <div>
       <Eyebrow>Payment outcome</Eyebrow>
-      <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-ink">
         {blocked ? "Prava was never called" : "A real sandbox session was created"}
       </h2>
 
       {blocked ? (
-        <div className="mt-6 rounded-2xl border border-block bg-block-soft p-6">
+        <div className="mt-6 rounded-[12px] border border-block bg-block-soft p-6">
           <p className="text-sm leading-relaxed text-block-ink">
-            The agent was blocked by the Procurement Approval Engine, before any
-            payment provider was contacted. No session was created, no card was
-            issued — the flow stops entirely on our side. This is the point of the
-            engine: an untrusted or policy-violating agent never reaches money.
+            Blocked before any payment provider was contacted — no session, no card.
+            A bad agent never reaches money.
           </p>
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">
-          <div className="rounded-2xl border border-line-strong bg-paper-raised p-6">
+          <div className="rounded-[12px] border border-line-strong bg-paper-raised p-6">
             <div className="flex items-center gap-2 text-sm font-medium text-ink">
               <span className="h-4 w-4 text-signal">
                 <IconCard />
@@ -594,8 +591,8 @@ function PaymentOutcome({ result }: { result: PurchaseResult }) {
           </div>
 
           {result.sandbox_note && (
-            <div className="rounded-2xl border border-review bg-review-soft p-6">
-              <div className="text-sm font-semibold text-review-ink">
+            <div className="rounded-[12px] border border-review bg-review-soft p-6">
+              <div className="text-sm font-extrabold text-review-ink">
                 Sandbox stops here — this is a finding, not a failure
               </div>
               <p className="mt-2 text-sm leading-relaxed text-review-ink">

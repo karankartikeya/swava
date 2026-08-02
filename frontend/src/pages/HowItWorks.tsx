@@ -17,12 +17,11 @@ export function HowItWorks() {
     <div className="pb-24">
       <Section className="pt-16 pb-10">
         <Eyebrow>How it works</Eyebrow>
-        <h1 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-[2.75rem]">
-          Six steps from a task to a procurement decision.
+        <h1 className="mt-3 max-w-2xl font-display text-4xl font-extrabold uppercase leading-[1.1] tracking-[0.02em] text-ink sm:text-[2.75rem]">
+          Six steps to a procurement decision.
         </h1>
-        <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-          Every purchase an AI agent makes goes through the same Procurement
-          Approval Engine, in the same order, with no step skipped.
+        <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink">
+          Every purchase goes through the same engine, in the same order.
         </p>
       </Section>
 
@@ -44,17 +43,16 @@ export function HowItWorks() {
       </Section>
 
       <Section className="mt-16">
-        <div className="rounded-2xl border border-line bg-paper-raised p-8 text-center">
-          <p className="text-lg text-ink-soft">
-            Every one of these steps is live — real merchant search, a real reputation
-            lookup, a real sandbox payment session.
+        <div className="rounded-[12px] border border-line bg-teal p-8 text-center">
+          <p className="text-lg text-ink">
+            Every step above is live.
           </p>
           <Link
             to="/demo"
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-signal px-6 py-3 font-medium text-paper transition-opacity hover:opacity-90"
+            className="mt-5 inline-flex items-center gap-2 rounded-[6px] bg-signal px-6 py-3 font-medium text-paper transition-opacity hover:opacity-90"
           >
-            Run it yourself
             <ArrowIcon />
+            Run it yourself
           </Link>
         </div>
       </Section>
@@ -79,37 +77,37 @@ function ArrowIcon() {
 const steps: { title: string; body: string; icon: React.ReactNode; side: "agent" | "merchant" | "neutral" }[] = [
   {
     title: "Task and budget come in",
-    body: "A task description (\"buy a cheap razor\") and a spending cap in rupees. This is the only human input to the whole flow.",
+    body: "The only human input: a task and a spending cap.",
     icon: <IconTask />,
     side: "neutral",
   },
   {
     title: "The agent searches merchants",
-    body: "It queries every configured merchant's live product catalog over the Universal Commerce Protocol (UCP), in real time — not a cached or mocked list.",
+    body: "Live product search over the Universal Commerce Protocol — never cached.",
     icon: <IconSearch />,
     side: "merchant",
   },
   {
     title: "The AI agent's own trust score is checked",
-    body: "Not the merchant's. Not the employee's. The agent has its own persistent, on-chain economic identity — its Agent Trust Score, queried against Swava's reputation index.",
+    body: "Not the merchant's, not the employee's — the agent's own on-chain identity.",
     icon: <IconWallet />,
     side: "agent",
   },
   {
     title: "Score and procurement policy set a limit",
-    body: "A score of 70+ unlocks a ₹10,000 limit. A new or unrated agent gets a neutral ₹500 limit — never zero, never an error. Below 30, the limit is ₹0. Any company-configured procurement policy for that agent — a category cap, a blocked category — is applied on top and always wins.",
+    body: "70+ unlocks ₹10,000. Unrated gets a neutral ₹500. Below 30, it's ₹0. Company policy applies on top and always wins.",
     icon: <IconGauge />,
     side: "agent",
   },
   {
     title: "The Procurement Approval Engine decides",
-    body: "Auto-approve if the purchase clears both the score-derived limit and policy. Manager approval required if it's over. Blocked outright if the score is too low or the policy forbids it — before any payment system is ever contacted.",
+    body: "Auto-approve under the limit. Manager approval over it. Blocked before payment if the score or policy fails.",
     icon: <IconGate />,
     side: "agent",
   },
   {
     title: "Payment is attempted",
-    body: "Only past the engine. A real sandbox session is created, a card is issued, and checkout is attempted against the merchant — the last mile with real, documented findings of its own.",
+    body: "Only past the engine — a real sandbox session, a real card, a real checkout attempt.",
     icon: <IconCard />,
     side: "merchant",
   },
@@ -130,21 +128,21 @@ function StepRow({
 }) {
   const sideStyle =
     side === "agent"
-      ? "border-signal/40 bg-signal-soft text-signal-ink"
+      ? "border-signal bg-mint text-ink"
       : side === "merchant"
-        ? "border-line-strong bg-paper-raised text-ink-soft"
-        : "border-line bg-paper text-ink-soft";
+        ? "border-line-strong bg-paper text-ink"
+        : "border-line bg-paper text-ink";
 
   return (
     <div className="grid grid-cols-[2.5rem_1fr] gap-5 sm:grid-cols-[3rem_420px_1fr] sm:items-center">
-      <div className="font-mono text-sm text-ink-faint sm:self-start sm:pt-4">
+      <div className="font-mono text-sm text-ink sm:self-start sm:pt-4">
         {String(index).padStart(2, "0")}
       </div>
-      <div className={`col-span-2 flex items-start gap-4 rounded-2xl border p-5 sm:col-span-1 ${sideStyle}`}>
+      <div className={`col-span-2 flex items-start gap-4 rounded-[12px] border p-5 sm:col-span-1 ${sideStyle}`}>
         <div className="mt-0.5 h-6 w-6 shrink-0">{icon}</div>
         <div>
-          <h3 className="text-base font-semibold text-ink">{title}</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
+          <h3 className="text-base font-bold text-ink">{title}</h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-ink">{body}</p>
         </div>
       </div>
       {side !== "neutral" && (
@@ -152,7 +150,7 @@ function StepRow({
           <svg width="20" height="10" viewBox="0 0 20 10" fill="none" aria-hidden="true" className="shrink-0 text-line-strong">
             <path d="M0 5h17M17 5l-4-4M17 5l-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-xs font-medium uppercase tracking-wide text-ink-faint">
+          <span className="font-mono text-xs font-medium uppercase tracking-wide text-ink">
             {side === "agent" ? "scores the AI agent" : "concerns the merchant, not scoring"}
           </span>
         </div>
@@ -163,9 +161,9 @@ function StepRow({
 
 function WhoGetsScored() {
   return (
-    <div className="rounded-3xl border border-line bg-paper-raised p-8 sm:p-10">
+    <div className="rounded-[12px] border border-line bg-paper-raised p-8 sm:p-10">
       <Eyebrow>The one thing to get right</Eyebrow>
-      <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+      <h2 className="mt-2 font-display text-2xl font-extrabold text-ink">
         It's the buying AI agent that gets scored — never the merchant.
       </h2>
       <div className="mt-8 grid gap-6 sm:grid-cols-[1fr_auto_1fr]">
@@ -173,11 +171,11 @@ function WhoGetsScored() {
           icon={<IconAgent />}
           label="AI agent"
           sub="has an identity"
-          detail="Its own transaction history is the reputation signal. This is what gets an Agent Trust Score, a procurement policy, and an approval decision."
+          detail="Its own history is the trust signal — score, policy, decision."
           highlighted
         />
         <div className="flex items-center justify-center py-2 sm:py-0">
-          <div className="flex flex-col items-center gap-1 text-ink-faint">
+          <div className="flex flex-col items-center gap-1 text-ink">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="rotate-90 sm:rotate-0">
               <path d="M3 12h16M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -188,25 +186,23 @@ function WhoGetsScored() {
           icon={<IconStore />}
           label="Merchant"
           sub="has a store"
-          detail="Sells the product. Its catalog is searched live. Its own trustworthiness is not evaluated by this system — see below."
+          detail="Sells the product. Never scored — see below."
         />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-line-strong bg-paper px-6 py-5">
-        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-ink-faint">
+      <div className="mt-6 rounded-[12px] border border-line-strong bg-whisper px-6 py-5">
+        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-ink">
           Merchant trust
-          <span className="rounded-full bg-paper-raised px-2 py-0.5 text-[10px] normal-case tracking-normal text-ink-faint">
+          <span className="rounded-full bg-highlight px-2 py-0.5 text-[10px] normal-case tracking-normal text-ink">
             not yet available
           </span>
         </div>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
-          This build has no merchant-side trust signal — no score, real or
-          placeholder, is computed for a merchant. Building one honestly would need
-          its own indexed history, the same way the agent side does. See{" "}
-          <Link to="/findings" className="text-signal underline decoration-signal/40 underline-offset-4">
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink">
+          No merchant score exists yet, real or placeholder. See{" "}
+          <Link to="/findings" className="font-medium text-ink underline decoration-signal underline-offset-4">
             Findings
-          </Link>{" "}
-          for the full gap.
+          </Link>
+          .
         </p>
       </div>
     </div>
@@ -228,26 +224,26 @@ function ActorCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-6 ${
+      className={`rounded-[12px] border p-6 ${
         highlighted
           ? "border-signal bg-signal text-paper"
           : "border-line-strong bg-paper text-ink"
       }`}
     >
-      <div className={`h-8 w-8 ${highlighted ? "text-paper" : "text-ink-faint"}`}>{icon}</div>
-      <div className="mt-4 font-display text-xl font-semibold">{label}</div>
+      <div className={`h-8 w-8 ${highlighted ? "text-paper" : "text-ink"}`}>{icon}</div>
+      <div className="mt-4 font-display text-xl font-extrabold">{label}</div>
       <div
         className={`font-mono text-xs uppercase tracking-wide ${
-          highlighted ? "text-paper/70" : "text-ink-faint"
+          highlighted ? "text-paper/70" : "text-ink"
         }`}
       >
         {sub}
       </div>
-      <p className={`mt-3 text-sm leading-relaxed ${highlighted ? "text-paper/90" : "text-ink-soft"}`}>
+      <p className={`mt-3 text-sm leading-relaxed ${highlighted ? "text-paper/90" : "text-ink"}`}>
         {detail}
       </p>
       {highlighted && (
-        <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-paper/15 px-3 py-1 text-xs font-medium">
+        <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 text-xs font-medium text-ink">
           scored here
         </div>
       )}

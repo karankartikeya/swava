@@ -10,13 +10,13 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={`mx-auto max-w-5xl px-6 ${className}`}>{children}</section>
+    <section className={`mx-auto max-w-[1200px] px-6 ${className}`}>{children}</section>
   );
 }
 
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
-    <div className="font-mono text-xs uppercase tracking-[0.14em] text-signal">
+    <div className="inline-flex items-center gap-1.5 rounded-full bg-highlight px-3 py-1 font-body text-xs font-medium uppercase tracking-wide text-ink">
       {children}
     </div>
   );
@@ -53,7 +53,7 @@ export function DecisionBadge({ decision }: { decision: Decision }) {
   const m = decisionMeta[decision];
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium ${m.text} ${m.bg} ${m.border}`}
+      className={`inline-flex items-center gap-2 rounded-[6px] border px-3.5 py-1.5 text-sm font-medium ${m.text} ${m.bg} ${m.border}`}
     >
       <span className="h-4 w-4">{m.icon}</span>
       {m.label}

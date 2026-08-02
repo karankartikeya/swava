@@ -14,9 +14,9 @@ export interface PipelineStage {
 }
 
 const sideColor: Record<NonNullable<PipelineStage["side"]>, string> = {
-  agent: "border-signal bg-signal-soft text-signal-ink",
-  merchant: "border-line-strong bg-paper-raised text-ink-soft",
-  neutral: "border-line-strong bg-paper-raised text-ink-soft",
+  agent: "border-signal bg-mint text-ink",
+  merchant: "border-line-strong bg-paper-raised text-ink",
+  neutral: "border-line-strong bg-paper-raised text-ink",
 };
 
 export function Pipeline({
@@ -35,14 +35,14 @@ export function Pipeline({
       {stages.map((stage, i) => (
         <div key={stage.key} className="flex items-center" role="listitem">
           <div
-            className={`flex shrink-0 flex-col items-center gap-2 rounded-2xl border px-4 py-3.5 transition-colors ${
+            className={`flex shrink-0 flex-col items-center gap-2 rounded-[12px] border px-4 py-3.5 transition-colors ${
               stage.state === "active"
                 ? "border-signal bg-signal text-paper shadow-[0_0_0_4px_var(--signal-soft)]"
                 : stage.state === "done"
                   ? sideColor[stage.side ?? "neutral"]
                   : stage.state === "skipped"
-                    ? "border-line bg-paper text-ink-faint opacity-50"
-                    : "border-line bg-paper text-ink-faint"
+                    ? "border-line bg-paper text-ink opacity-50"
+                    : "border-line bg-paper text-ink"
             } ${compact ? "min-w-[92px]" : "min-w-[132px]"}`}
           >
             <div className={compact ? "h-5 w-5" : "h-6 w-6"}>{stage.icon}</div>

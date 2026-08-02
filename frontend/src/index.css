@@ -3,9 +3,9 @@
 /* ---------- Fonts (self-hosted, no CDN request at runtime) ---------- */
 
 @font-face {
-  font-family: "Fraunces";
-  src: url("./fonts/fraunces-variable.woff2") format("woff2");
-  font-weight: 300 700;
+  font-family: "Bricolage Grotesque";
+  src: url("./fonts/bricolage-grotesque-800.woff2") format("woff2");
+  font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
@@ -19,110 +19,58 @@
 }
 
 @font-face {
-  font-family: "JetBrains Mono";
-  src: url("./fonts/jetbrains-mono-400.woff2") format("woff2");
+  font-family: "Roboto Mono";
+  src: url("./fonts/roboto-mono-400.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("./fonts/jetbrains-mono-500.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* ---------- Design tokens ---------- */
+/* ---------- Design tokens — "Say Briefly" system ---------- */
+/* Creative-agency sketchbook: warm cream paper, forest ink for structure,
+   highlighter yellow for emphasis, sticky-note pastels for accents. Single
+   theme by design (see design.md) — the palette is a deliberate light-mode
+   commitment, not an oversight, so dark mode reuses the same tokens. */
 
 :root {
-  /* Grounds — warm paper, not clinical white */
-  --paper: #f6f4ee;
-  --paper-raised: #fbfaf6;
-  --ink: #12161c;
-  --ink-soft: #454c56;
-  --ink-faint: #7a8189;
-  --line: #dcd8cc;
-  --line-strong: #c7c2b2;
+  --paper: #fcfaf5;
+  --paper-raised: #fcfaf5;
+  --ink: #1a3300;
+  --ink-soft: #1a3300;
+  --ink-faint: #b6b6b6;
+  --line: #b6b6b6;
+  --line-strong: #1a3300;
 
-  /* Accent — deep pine, the one recurring color thread */
-  --signal: #2f5d4f;
-  --signal-soft: #e7ede9;
-  --signal-ink: #16342b;
+  --signal: #1a3300;
+  --signal-soft: #d5f5c2;
+  --signal-ink: #1a3300;
 
-  /* Decision colors — semantic, none read as a generic "error" red */
-  --approve: #3a7d5c;
-  --approve-soft: #e6f0e9;
-  --approve-ink: #1f4531;
+  --highlight: #ffe95c;
+  --mint: #d5f5c2;
+  --blush: #f6d0ff;
+  --teal: #a8e5e5;
+  --terracotta: #cb5521;
+  --whisper: #f1f1f1;
 
-  --review: #b8863b;
-  --review-soft: #f5ebd9;
-  --review-ink: #5c3f16;
+  /* Decision colors — derived from the palette itself (design.md defines
+     no semantic states), never a generic red/green alarm pairing. */
+  --approve: #1a3300;
+  --approve-soft: #d5f5c2;
+  --approve-ink: #1a3300;
 
-  --block: #a14444;
-  --block-soft: #f3e3e0;
-  --block-ink: #5c2323;
+  --review: #1a3300;
+  --review-soft: #ffe95c;
+  --review-ink: #1a3300;
 
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --block: #cb5521;
+  --block-soft: #f6d0ff;
+  --block-ink: #7a2f11;
 
-  color-scheme: light dark;
-}
+  --font-display: "Bricolage Grotesque", "Archivo Black", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-:root[data-theme="dark"] {
-  --paper: #12161c;
-  --paper-raised: #171c23;
-  --ink: #ece8de;
-  --ink-soft: #b7bcc4;
-  --ink-faint: #7d848d;
-  --line: #2a3038;
-  --line-strong: #3a414b;
-
-  --signal: #6fae96;
-  --signal-soft: #1c2c27;
-  --signal-ink: #bfe3d3;
-
-  --approve: #6fae96;
-  --approve-soft: #182821;
-  --approve-ink: #a9d8c1;
-
-  --review: #d1a55e;
-  --review-soft: #2c2415;
-  --review-ink: #edcd93;
-
-  --block: #d17a7a;
-  --block-soft: #2c1a1a;
-  --block-ink: #eeb2b2;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #12161c;
-    --paper-raised: #171c23;
-    --ink: #ece8de;
-    --ink-soft: #b7bcc4;
-    --ink-faint: #7d848d;
-    --line: #2a3038;
-    --line-strong: #3a414b;
-
-    --signal: #6fae96;
-    --signal-soft: #1c2c27;
-    --signal-ink: #bfe3d3;
-
-    --approve: #6fae96;
-    --approve-soft: #182821;
-    --approve-ink: #a9d8c1;
-
-    --review: #d1a55e;
-    --review-soft: #2c2415;
-    --review-ink: #edcd93;
-
-    --block: #d17a7a;
-    --block-soft: #2c1a1a;
-    --block-ink: #eeb2b2;
-  }
+  color-scheme: light;
 }
 
 @theme {
@@ -137,6 +85,13 @@
   --color-signal: var(--signal);
   --color-signal-soft: var(--signal-soft);
   --color-signal-ink: var(--signal-ink);
+
+  --color-highlight: var(--highlight);
+  --color-mint: var(--mint);
+  --color-blush: var(--blush);
+  --color-teal: var(--teal);
+  --color-terracotta: var(--terracotta);
+  --color-whisper: var(--whisper);
 
   --color-approve: var(--approve);
   --color-approve-soft: var(--approve-soft);
@@ -153,6 +108,10 @@
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-mono: var(--font-mono);
+
+  --radius-button: 6px;
+  --radius-card: 12px;
+  --radius-nav: 16px;
 }
 
 /* ---------- Base ---------- */
@@ -162,7 +121,7 @@
 }
 
 html {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 body {
@@ -171,7 +130,7 @@ body {
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -179,9 +138,10 @@ body {
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
+  font-weight: 800;
   text-wrap: balance;
-  color: var(--ink);
   margin: 0;
+  letter-spacing: 0.02em;
 }
 
 p {
@@ -189,8 +149,8 @@ p {
 }
 
 ::selection {
-  background: var(--signal-soft);
-  color: var(--signal-ink);
+  background: var(--highlight);
+  color: var(--ink);
 }
 
 :focus-visible {
@@ -200,6 +160,45 @@ p {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Load-time hero stagger — plays once on mount, no scroll trigger. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Slow ambient drift for the hero sketch — small, continuous, never distracting. */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+.float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+/* Marker-pen highlight wash behind a word/phrase — see design.md's
+   "Highlighted Word" component. Rectangular background, not a border. */
+.mark {
+  background: var(--highlight);
+  padding: 0 0.15em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 @media (prefers-reduced-motion: reduce) {
