@@ -18,11 +18,11 @@ export function HowItWorks() {
       <Section className="pt-16 pb-10">
         <Eyebrow>How it works</Eyebrow>
         <h1 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-[2.75rem]">
-          Six steps from a task to a payment decision.
+          Six steps from a task to a procurement decision.
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-          Every purchase this system makes goes through the same sequence, in the same
-          order, with no step skipped.
+          Every purchase an AI agent makes goes through the same Procurement
+          Approval Engine, in the same order, with no step skipped.
         </p>
       </Section>
 
@@ -90,26 +90,26 @@ const steps: { title: string; body: string; icon: React.ReactNode; side: "agent"
     side: "merchant",
   },
   {
-    title: "The agent's own wallet reputation is checked",
-    body: "Not the merchant's. Not the human's. The wallet belongs to the agent itself — its own persistent, on-chain economic identity, queried against Swava's reputation index.",
+    title: "The AI agent's own trust score is checked",
+    body: "Not the merchant's. Not the employee's. The agent has its own persistent, on-chain economic identity — its Agent Trust Score, queried against Swava's reputation index.",
     icon: <IconWallet />,
     side: "agent",
   },
   {
-    title: "Score converts to a spend limit",
-    body: "A score of 70+ unlocks a ₹10,000 limit. A new or unknown wallet gets a neutral ₹500 limit — never zero, never an error. Below 30, the limit is ₹0.",
+    title: "Score and procurement policy set a limit",
+    body: "A score of 70+ unlocks a ₹10,000 limit. A new or unrated agent gets a neutral ₹500 limit — never zero, never an error. Below 30, the limit is ₹0. Any company-configured procurement policy for that agent — a category cap, a blocked category — is applied on top and always wins.",
     icon: <IconGauge />,
     side: "agent",
   },
   {
-    title: "The gate decides",
-    body: "Auto-approve if the purchase is under the limit. Human review if it's over. Blocked outright if the score itself is too low — before any payment system is ever contacted.",
+    title: "The Procurement Approval Engine decides",
+    body: "Auto-approve if the purchase clears both the score-derived limit and policy. Manager approval required if it's over. Blocked outright if the score is too low or the policy forbids it — before any payment system is ever contacted.",
     icon: <IconGate />,
     side: "agent",
   },
   {
     title: "Payment is attempted",
-    body: "Only past the gate. A real sandbox session is created, a card is issued, and checkout is attempted against the merchant — the last mile with real, documented findings of its own.",
+    body: "Only past the engine. A real sandbox session is created, a card is issued, and checkout is attempted against the merchant — the last mile with real, documented findings of its own.",
     icon: <IconCard />,
     side: "merchant",
   },
@@ -153,7 +153,7 @@ function StepRow({
             <path d="M0 5h17M17 5l-4-4M17 5l-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="text-xs font-medium uppercase tracking-wide text-ink-faint">
-            {side === "agent" ? "scores the agent's wallet" : "concerns the merchant, not scoring"}
+            {side === "agent" ? "scores the AI agent" : "concerns the merchant, not scoring"}
           </span>
         </div>
       )}
@@ -166,14 +166,14 @@ function WhoGetsScored() {
     <div className="rounded-3xl border border-line bg-paper-raised p-8 sm:p-10">
       <Eyebrow>The one thing to get right</Eyebrow>
       <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
-        It's the buying agent that gets scored — never the merchant.
+        It's the buying AI agent that gets scored — never the merchant.
       </h2>
       <div className="mt-8 grid gap-6 sm:grid-cols-[1fr_auto_1fr]">
         <ActorCard
           icon={<IconAgent />}
-          label="Buying agent"
-          sub="has a wallet"
-          detail="Its wallet's transaction history is the reputation signal. This is what gets a score, a spend limit, and a gate decision."
+          label="AI agent"
+          sub="has an identity"
+          detail="Its own transaction history is the reputation signal. This is what gets an Agent Trust Score, a procurement policy, and an approval decision."
           highlighted
         />
         <div className="flex items-center justify-center py-2 sm:py-0">
@@ -188,8 +188,26 @@ function WhoGetsScored() {
           icon={<IconStore />}
           label="Merchant"
           sub="has a store"
-          detail="Sells the product. Its catalog is searched live. Its reputation is not evaluated by this system at all."
+          detail="Sells the product. Its catalog is searched live. Its own trustworthiness is not evaluated by this system — see below."
         />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-line-strong bg-paper px-6 py-5">
+        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-ink-faint">
+          Merchant trust
+          <span className="rounded-full bg-paper-raised px-2 py-0.5 text-[10px] normal-case tracking-normal text-ink-faint">
+            not yet available
+          </span>
+        </div>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+          This build has no merchant-side trust signal — no score, real or
+          placeholder, is computed for a merchant. Building one honestly would need
+          its own indexed history, the same way the agent side does. See{" "}
+          <Link to="/findings" className="text-signal underline decoration-signal/40 underline-offset-4">
+            Findings
+          </Link>{" "}
+          for the full gap.
+        </p>
       </div>
     </div>
   );

@@ -15,14 +15,15 @@ export function Home() {
   return (
     <div className="pb-24">
       <Section className="pt-16 pb-4 sm:pt-24">
-        <Eyebrow>Swava</Eyebrow>
+        <Eyebrow>Swava — AI Procurement Manager</Eyebrow>
         <h1 className="mt-4 max-w-3xl font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-6xl">
-          AI agents are getting payment rails before they have any credit history.
+          Let AI agents spend company money — without letting them spend it unsupervised.
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-          Swava is a reputation bureau for agent wallets — a trust score built from
-          on-chain history, converted into a spend limit, that gates every purchase an
-          agent tries to make before money moves.
+          Swava lets companies safely let AI agents spend company money. Every
+          purchase an agent tries to make goes through a Procurement Approval
+          Engine — built from the agent's own trust score — before it ever
+          reaches payment.
         </p>
 
         <div className="mt-9 flex flex-wrap items-center gap-4">
@@ -55,25 +56,27 @@ export function Home() {
               stages={[
                 { key: "task", label: "Task + budget", icon: <IconTask />, side: "neutral", state: "done" },
                 { key: "search", label: "Search merchants", icon: <IconSearch />, side: "merchant", state: "done" },
-                { key: "wallet", label: "Score agent's wallet", icon: <IconWallet />, side: "agent", state: "done" },
-                { key: "limit", label: "Convert to limit", icon: <IconGauge />, side: "agent", state: "done" },
-                { key: "gate", label: "Gate decides", icon: <IconGate />, side: "agent", state: "active" },
+                { key: "wallet", label: "Score the AI agent", icon: <IconWallet />, side: "agent", state: "done" },
+                { key: "limit", label: "Apply procurement policy", icon: <IconGauge />, side: "agent", state: "done" },
+                { key: "gate", label: "Approval engine decides", icon: <IconGate />, side: "agent", state: "active" },
                 { key: "pay", label: "Payment attempt", icon: <IconCard />, side: "merchant", state: "idle" },
               ]}
             />
           </div>
           <p className="mt-6 max-w-2xl text-sm leading-relaxed text-ink-soft">
             Every stage above is real: a live agent searches three real Shopify
-            merchants over UCP, checks a real wallet's reputation against ~11,000+
-            indexed scores, and attempts a real payment through Prava's sandbox.
+            merchants over UCP, checks a real agent trust score against ~11,000+
+            indexed scores, applies a real per-agent procurement policy, and
+            attempts a real payment through Prava's sandbox.
           </p>
         </div>
       </Section>
 
-      <Section className="mt-20 grid gap-10 sm:grid-cols-3">
+      <Section className="mt-20 grid gap-10 sm:grid-cols-4">
         <Stat n="3" label="Real merchants" detail="Searched live via UCP, not mocked." />
-        <Stat n="11,000+" label="Indexed wallet scores" detail="Swava's reputation index, pre-hackathon." />
-        <Stat n="3" label="Gate outcomes" detail="Auto-approve, human review, blocked — all real, all reachable." />
+        <Stat n="11,000+" label="Indexed agent scores" detail="Swava's reputation index, pre-hackathon." />
+        <Stat n="3" label="Approval outcomes" detail="Auto-approve, manager approval, blocked — all real, all reachable." />
+        <Stat n="1" label="Procurement policy" detail="A real per-agent category cap, enforced live." />
       </Section>
 
       <Section className="mt-20">
@@ -81,9 +84,20 @@ export function Home() {
       </Section>
 
       <Section className="mt-16">
+        <div className="rounded-2xl border border-line bg-paper-raised p-6 sm:p-8">
+          <Eyebrow>What's next</Eyebrow>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+            Department-level budgets — separate spend pools per team, not just per
+            agent — are the natural next constraint on top of this. Not built yet;
+            noted here as the direction, not a promise.
+          </p>
+        </div>
+      </Section>
+
+      <Section className="mt-16">
         <div className="rounded-3xl border border-line-strong bg-signal px-8 py-10 text-paper sm:px-12">
           <h2 className="max-w-lg font-display text-2xl font-semibold sm:text-3xl">
-            Watch an agent get scored, gated, and (almost) pay for something.
+            Watch an AI agent get scored, gated, and (almost) pay for something.
           </h2>
           <Link
             to="/demo"

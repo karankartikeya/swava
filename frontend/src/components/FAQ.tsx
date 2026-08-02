@@ -1,8 +1,8 @@
 import { Eyebrow } from "./ui";
 
-/** Shared across How It Works and Live Demo — anticipates the sharpest
- * objection a self-funded, single-operator visitor has: why limit an agent
- * that's only ever spending your own money under your own eye. */
+/** Shared across Home, How It Works, and Live Demo — anticipates the
+ * sharpest objection: if a company already sets a spending mandate for its
+ * agent, why does it also need a trust score. */
 export function FAQ() {
   return (
     <div className="rounded-3xl border border-line bg-paper-raised p-8 sm:p-10">
@@ -13,32 +13,34 @@ export function FAQ() {
 
       <div className="mt-6 flex flex-col gap-4 text-[15px] leading-relaxed text-ink-soft">
         <p>
-          Two different questions get conflated here. <strong className="text-ink">Does the agent
-          have money to spend</strong> — that's Prava's job, you already set the mandate and the
-          ceiling. <strong className="text-ink">Should it be trusted to spend it right now,
-          without you personally checking</strong> — that's what the score answers. If a human
-          reviews every transaction, the score is redundant; the human is the check. It matters
-          the moment you want the agent acting while you're not watching.
+          Two different questions get conflated here. <strong className="text-ink">Does the
+          agent have a budget to spend</strong> — that's the procurement policy, set once by
+          whoever owns the agent. <strong className="text-ink">Should it be trusted to spend
+          right now, without a manager personally checking</strong> — that's what the trust
+          score answers. If a manager reviews every purchase, the score is redundant; the
+          manager is the check. It matters the moment a company wants the agent acting
+          on its own, without someone watching every transaction.
         </p>
 
         <p>
-          For one person running their own agent, on their own funds, watching closely — this
+          For a single founder running one agent on their own funds, watching closely — this
           mostly doesn't apply. That's a fair objection, and it's fine to say so.
         </p>
 
         <p>
-          It matters somewhere else: an insurer underwriting an agent it's never dealt with, a
-          marketplace receiving a purchase request from an unfamiliar wallet, a company running
-          agents it didn't personally build and needs one shared signal to calibrate trust
-          across. Same reason human credit scores exist — nobody needs a FICO score to spend
-          their own paycheck. Scores exist for the stranger deciding whether to trust you.
+          It matters at any real headcount: a finance team that didn't build the agent it's
+          now letting spend company money, a company running several agents across
+          departments that needs one shared signal to calibrate trust across all of them, an
+          auditor asking why a given purchase was allowed. Same reason employee spending
+          controls and credit checks exist at all — nobody needs oversight to spend their own
+          paycheck. Scores exist for the person who has to answer for someone else's spending.
         </p>
 
         <p>
-          One thing still holds even in the self-funded case: if the agent gets compromised, or
-          just starts behaving differently after a long clean run, a dropping score is an early
-          warning a spend limit alone can't give you — a mandate only checks the ceiling, never
-          whether the behavior underneath it changed.
+          One thing still holds even for a single well-behaved agent: if it gets compromised,
+          or just starts behaving differently after a long clean run, a dropping score is an
+          early warning a budget cap alone can't give you — a procurement policy only checks
+          the ceiling, never whether the behavior underneath it changed.
         </p>
       </div>
     </div>

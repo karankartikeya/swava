@@ -34,7 +34,7 @@ const decisionMeta: Record<
     border: "border-approve",
   },
   human_review: {
-    label: "Needs human review",
+    label: "Manager approval required",
     icon: <IconPause />,
     text: "text-review-ink",
     bg: "bg-review-soft",

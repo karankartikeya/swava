@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import type { DecideResult, DemoWallet, PurchaseResult } from "../lib/api";
+import type { AgentProfile, DecideResult, DemoWallet, PurchaseResult } from "../lib/api";
 import { Section, Eyebrow, DecisionBadge, decisionMetaFor } from "../components/ui";
 import { FAQ } from "../components/FAQ";
 import { IconSearch, IconCheck, IconCard } from "../components/icons";
+
+interface AuditEntry {
+  id: string;
+  timestamp: string;
+  agentRole: string;
+  action: string;
+  decision: string;
+  reason: string;
+}
 
 type Phase = "idle" | "deciding" | "decided" | "purchasing" | "purchased" | "error";
 
@@ -24,6 +33,8 @@ export function Demo() {
   const [decideResult, setDecideResult] = useState<DecideResult | null>(null);
   const [purchaseResult, setPurchaseResult] = useState<PurchaseResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [profileAddress, setProfileAddress] = useState<string | null>(null);
 
   useEffect(() => {
     api
@@ -51,6 +62,19 @@ export function Demo() {
       const purchase = await api.purchase(walletAddress, decide.chosen_product);
       setPurchaseResult(purchase);
       setPhase("purchased");
+
+      const agentRole = wallets.find((w) => w.address === walletAddress)?.agent_role ?? walletAddress;
+      setAudit((prev) => [
+        {
+          id: `${Date.now()}`,
+          timestamp: new Date().toLocaleTimeString(),
+          agentRole,
+          action: `${decide.chosen_product!.description} — Rs.${decide.chosen_product!.unit_price_rupees}`,
+          decision: purchase.trust_gate.decision,
+          reason: purchase.trust_gate.reason,
+        },
+        ...prev,
+      ]);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setPhase("error");
@@ -64,11 +88,11 @@ export function Demo() {
       <Section className="pt-16 pb-10">
         <Eyebrow>Live demo</Eyebrow>
         <h1 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-[2.75rem]">
-          Give the agent a task and a budget.
+          Give an AI agent a task and a budget.
         </h1>
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-          Every call below hits the real backend — real merchant search, a real Swava
-          score, a real Prava sandbox session.
+          Every call below hits the real backend — real merchant search, a real Agent
+          Trust Score, a real procurement policy check, a real Prava sandbox session.
         </p>
       </Section>
 
@@ -83,8 +107,15 @@ export function Demo() {
           setWalletAddress={setWalletAddress}
           onRun={runDemo}
           running={running}
+          onViewProfile={setProfileAddress}
         />
       </Section>
+
+      {profileAddress && (
+        <Section className="mt-8">
+          <AgentProfilePanel address={profileAddress} onClose={() => setProfileAddress(null)} />
+        </Section>
+      )}
 
       {error && (
         <Section className="mt-8">
@@ -119,9 +150,127 @@ export function Demo() {
         </Section>
       )}
 
+      {audit.length > 0 && (
+        <Section className="mt-12">
+          <AuditTimeline entries={audit} />
+        </Section>
+      )}
+
       <Section className="mt-16">
         <FAQ />
       </Section>
+    </div>
+  );
+}
+
+function AuditTimeline({ entries }: { entries: AuditEntry[] }) {
+  return (
+    <div>
+      <Eyebrow>Audit timeline</Eyebrow>
+      <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+        Every decision made this session
+      </h2>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+        A real, chronological record of what the Procurement Approval Engine decided —
+        not a mockup, built from the same responses shown above.
+      </p>
+      <div className="mt-6 flex flex-col gap-2">
+        {entries.map((e) => {
+          const meta = decisionMetaFor(e.decision as Parameters<typeof decisionMetaFor>[0]);
+          return (
+            <div
+              key={e.id}
+              className={`flex flex-wrap items-center gap-3 rounded-xl border px-5 py-3 text-sm ${meta.bg} ${meta.border}`}
+            >
+              <span className="tabular font-mono text-xs text-ink-faint">{e.timestamp}</span>
+              <span className="font-medium text-ink">{e.agentRole}</span>
+              <span className="text-ink-soft">{rupeeify(e.action)}</span>
+              <span className={`ml-auto rounded-full border px-2.5 py-0.5 text-xs font-medium ${meta.text} ${meta.border}`}>
+                {meta.label}
+              </span>
+              <span className={`w-full text-xs ${meta.text}`}>{rupeeify(e.reason)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AgentProfilePanel({ address, onClose }: { address: string; onClose: () => void }) {
+  const [profile, setProfile] = useState<AgentProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setErr(null);
+    api
+      .agentProfile(address)
+      .then(setProfile)
+      .catch((e) => setErr(e instanceof Error ? e.message : String(e)))
+      .finally(() => setLoading(false));
+  }, [address]);
+
+  return (
+    <div className="rounded-3xl border border-line-strong bg-paper-raised p-6 sm:p-8">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <Eyebrow>Agent profile</Eyebrow>
+          <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
+            {profile?.agent_role ?? "Loading…"}
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
+        >
+          Close
+        </button>
+      </div>
+
+      {loading && <p className="mt-6 text-sm text-ink-soft">Fetching real profile data…</p>}
+      {err && <p className="mt-6 text-sm text-block-ink">{err}</p>}
+
+      {profile && (
+        <div className="mt-6 flex flex-col gap-6">
+          <div className="grid gap-px overflow-hidden rounded-2xl bg-line sm:grid-cols-3">
+            <Field label="Agent identity" value={`${profile.address.slice(0, 10)}…${profile.address.slice(-4)}`} sub="de-emphasized — this is not the agent's name" />
+            <Field label="Agent trust score" value={profile.known ? `${profile.raw_score}/1000` : "unrated"} sub={profile.known ? `tier ${profile.tier}` : "no indexed history yet"} />
+            <Field
+              label="Procurement policy"
+              value={profile.policy ? `cap Rs.${profile.policy.category_cap_rupees}` : "none configured"}
+              sub={profile.policy?.blocked_keywords?.length ? `blocks: ${profile.policy.blocked_keywords.join(", ")}` : undefined}
+            />
+          </div>
+
+          <div>
+            <div className="text-sm font-medium text-ink">Purchase history</div>
+            {profile.transactions.length === 0 ? (
+              <p className="mt-2 text-sm text-ink-faint">
+                No indexed on-chain activity for this agent yet — sparse history, shown as-is.
+              </p>
+            ) : (
+              <div className="mt-3 flex flex-col gap-2">
+                {profile.transactions.slice(0, 8).map((t) => (
+                  <div
+                    key={t.tx_hash}
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-line px-4 py-2.5 text-xs"
+                  >
+                    <span className="tabular font-mono text-ink-faint">
+                      {new Date(t.timestamp).toLocaleDateString()}
+                    </span>
+                    <span className="font-mono text-ink-faint">{t.tx_hash.slice(0, 10)}…</span>
+                    <span className="text-ink-soft">{t.is_token_transfer ? "token transfer" : "native transfer"}</span>
+                    <span className="ml-auto font-mono text-ink-faint">{t.chain}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -136,6 +285,7 @@ function DemoForm({
   setWalletAddress,
   onRun,
   running,
+  onViewProfile,
 }: {
   task: string;
   setTask: (v: string) => void;
@@ -146,6 +296,7 @@ function DemoForm({
   setWalletAddress: (v: string) => void;
   onRun: () => void;
   running: boolean;
+  onViewProfile: (address: string) => void;
 }) {
   return (
     <div className="rounded-3xl border border-line bg-paper-raised p-6 sm:p-8">
@@ -172,7 +323,7 @@ function DemoForm({
       </div>
 
       <div className="mt-6">
-        <span className="text-sm font-medium text-ink">Wallet</span>
+        <span className="text-sm font-medium text-ink">AI agent</span>
         <div className="mt-2 grid gap-3 sm:grid-cols-3">
           {wallets.map((w) => (
             <button
@@ -185,11 +336,28 @@ function DemoForm({
                   : "border-line-strong bg-paper hover:border-ink-faint"
               }`}
             >
-              <div className="text-sm font-semibold text-ink">{w.label}</div>
+              <div className="text-sm font-semibold text-ink">{w.agent_role}</div>
               <div className="mt-1 font-mono text-[11px] text-ink-faint">
                 {w.address.slice(0, 8)}…{w.address.slice(-4)}
               </div>
               <div className="mt-1.5 text-xs leading-relaxed text-ink-soft">{w.description}</div>
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewProfile(w.address);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation();
+                    onViewProfile(w.address);
+                  }
+                }}
+                className="mt-2 inline-block cursor-pointer text-xs text-signal underline decoration-signal/40 underline-offset-4"
+              >
+                View agent profile
+              </span>
             </button>
           ))}
         </div>
@@ -300,7 +468,7 @@ function TrustGateCenterpiece({
 
   return (
     <div>
-      <Eyebrow>Trust gate</Eyebrow>
+      <Eyebrow>Procurement Approval Engine</Eyebrow>
       <h2 className="mt-2 font-display text-2xl font-semibold text-ink">
         The decision that gates the payment
       </h2>
@@ -309,7 +477,7 @@ function TrustGateCenterpiece({
       <div className="mt-6 overflow-hidden rounded-3xl border border-line-strong bg-paper-raised">
         {loading && !gate ? (
           <div className="flex items-center gap-3 px-8 py-10 text-sm text-ink-soft">
-            <Spinner /> Checking wallet reputation…
+            <Spinner /> Checking agent trust score…
           </div>
         ) : gate ? (
           <GateReadout gate={gate} wallet={wallet} product={product} />
@@ -340,11 +508,11 @@ function GateReadout({
         </div>
       </div>
       <div className="grid gap-px bg-line sm:grid-cols-3">
-        <Field label="Wallet" value={wallet?.label ?? "—"} sub={`${gate.wallet_address.slice(0, 10)}…`} />
+        <Field label="AI agent" value={wallet?.agent_role ?? "—"} sub={`${gate.wallet_address.slice(0, 10)}…`} />
         <Field
-          label="Score"
+          label="Agent trust score"
           value={`${gate.normalized_score}/100`}
-          sub={gate.known ? `raw ${gate.raw_score}/1000, tier ${gate.tier}` : "unknown wallet — neutral default"}
+          sub={gate.known ? `raw ${gate.raw_score}/1000, tier ${gate.tier}` : "unrated agent — neutral default"}
         />
         <Field label="Spend limit" value={`₹${gate.spend_limit_rupees.toLocaleString("en-IN")}`} />
         <Field
@@ -352,8 +520,16 @@ function GateReadout({
           value={`₹${product?.unit_price_rupees.toLocaleString("en-IN") ?? "—"}`}
           sub={product?.description}
         />
+        <Field
+          label="Procurement policy"
+          value={gate.policy ? `cap ₹${gate.policy.category_cap_rupees.toLocaleString("en-IN")}` : "none configured"}
+          sub={gate.policy?.blocked_keywords?.length ? `blocks: ${gate.policy.blocked_keywords.join(", ")}` : undefined}
+        />
         <Field label="Decision" value={gate.decision.replace("_", " ")} />
-        <Field label="Reason" value={gate.reason} />
+      </div>
+      <div className="border-t border-line bg-paper-raised px-6 py-5">
+        <div className="font-mono text-[11px] uppercase tracking-wide text-ink-faint">Reason</div>
+        <div className="mt-1 text-sm text-ink">{gate.reason}</div>
       </div>
     </div>
   );
@@ -382,10 +558,10 @@ function PaymentOutcome({ result }: { result: PurchaseResult }) {
       {blocked ? (
         <div className="mt-6 rounded-2xl border border-block bg-block-soft p-6">
           <p className="text-sm leading-relaxed text-block-ink">
-            The wallet was blocked at the trust gate, before any payment provider was
-            contacted. No session was created, no card was issued — the flow stops
-            entirely on our side. This is the point of the gate: a bad wallet never
-            reaches money.
+            The agent was blocked by the Procurement Approval Engine, before any
+            payment provider was contacted. No session was created, no card was
+            issued — the flow stops entirely on our side. This is the point of the
+            engine: an untrusted or policy-violating agent never reaches money.
           </p>
         </div>
       ) : (

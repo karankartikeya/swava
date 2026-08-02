@@ -4,7 +4,34 @@
 export interface DemoWallet {
   address: string;
   label: string;
+  agent_role: string;
   description: string;
+}
+
+export interface ProcurementPolicy {
+  agent_label: string;
+  category_cap_rupees: number;
+  blocked_keywords?: string[];
+}
+
+export interface Transaction {
+  tx_hash: string;
+  from: string;
+  to: string;
+  value: string;
+  timestamp: string;
+  is_token_transfer: boolean;
+  chain: string;
+}
+
+export interface AgentProfile {
+  address: string;
+  agent_role: string;
+  known: boolean;
+  raw_score: number;
+  tier: string;
+  policy?: ProcurementPolicy;
+  transactions: Transaction[];
 }
 
 export interface Product {
@@ -54,6 +81,7 @@ export interface TrustGateResult {
   spend_limit_rupees: number;
   decision: Decision;
   reason: string;
+  policy?: ProcurementPolicy;
 }
 
 export interface PurchaseResult {
@@ -104,4 +132,6 @@ export const api = {
       wallet_address: walletAddress,
       product,
     }),
+  agentProfile: (address: string) =>
+    get<AgentProfile>(`/agent-profile?address=${encodeURIComponent(address)}`),
 };
