@@ -121,14 +121,20 @@ func Run(task string, budgetRupees int) Result {
 		taskMatch bool
 	}
 	var candidates []candidate
+	anyTaskRelevant := false // true if the task named at least one catalog item, in or out of budget
 
 	for _, entry := range catalog {
+		taskMatch := strings.Contains(taskLower, entry.SearchTerm) ||
+			strings.Contains(taskLower, strings.ToLower(entry.Product.Description))
+		if taskMatch {
+			anyTaskRelevant = true
+		}
+
 		step := StepResult{
 			MerchantName: entry.Product.MerchantName,
 			SearchTerm:   entry.SearchTerm,
-			TaskMatch: strings.Contains(taskLower, entry.SearchTerm) ||
-				strings.Contains(taskLower, strings.ToLower(entry.Product.Description)),
-			UnderBudget: entry.Product.UnitPriceRupees <= budgetRupees,
+			TaskMatch:    taskMatch,
+			UnderBudget:  entry.Product.UnitPriceRupees <= budgetRupees,
 		}
 
 		endpoint := merchants[entry.MerchantEnvVar]
@@ -180,6 +186,16 @@ func Run(task string, budgetRupees int) Result {
 			continue
 		}
 
+		// The task named specific item(s) by keyword — an unrelated in-budget
+		// item must never win by default. Reject it explicitly instead of
+		// silently letting it become the only candidate.
+		if anyTaskRelevant && !step.TaskMatch {
+			step.Rejected = true
+			step.RejectReason = fmt.Sprintf("not relevant to task %q", task)
+			result.Steps = append(result.Steps, step)
+			continue
+		}
+
 		result.Steps = append(result.Steps, step)
 		candidates = append(candidates, candidate{entry: entry, taskMatch: step.TaskMatch})
 	}
@@ -199,7 +215,11 @@ func Run(task string, budgetRupees int) Result {
 	}
 
 	if best == nil {
-		result.Reasoning = fmt.Sprintf("no in-budget, reachable option found for task %q with budget Rs.%d", task, budgetRupees)
+		if anyTaskRelevant {
+			result.Reasoning = fmt.Sprintf("nothing relevant to task %q fits budget Rs.%d — the matching item was over budget", task, budgetRupees)
+		} else {
+			result.Reasoning = fmt.Sprintf("no in-budget, reachable option found for task %q with budget Rs.%d", task, budgetRupees)
+		}
 		return result
 	}
 
