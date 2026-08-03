@@ -58,6 +58,21 @@ func KnownCatalog() []CatalogEntry {
 				MerchantCountry:  "IN",
 			},
 		},
+		{
+			MerchantEnvVar: "MERCHANT_3",
+			SearchTerm:     "backpack",
+			Product: purchase.Product{
+				Description:      "Radio Backpack - 22L",
+				VariantID:        "gid://shopify/ProductVariant/41586184552518",
+				UnitPriceDecimal: "6999.00",
+				UnitPriceRupees:  6999,
+				Currency:         "INR",
+				MerchantName:     "Mokobara",
+				MerchantURL:      "https://mokobara.com",
+				MerchantMCPURL:   "https://mokobara.myshopify.com/api/ucp/mcp",
+				MerchantCountry:  "IN",
+			},
+		},
 	}
 }
 
@@ -120,8 +135,20 @@ func Run(task string, budgetRupees int) Result {
 		entry     CatalogEntry
 		taskMatch bool
 	}
-	var candidates []candidate
-	anyTaskRelevant := false // true if the task named at least one catalog item, in or out of budget
+
+	// Pass 1: search every catalog entry live and record what's true about
+	// it (relevance, budget fit, reachability) without yet deciding who's a
+	// real candidate — anyTaskRelevant isn't known for certain until every
+	// entry has been checked, so candidacy can't be decided per-entry as we
+	// go (that was the bug: an item searched before the task-relevant one
+	// could slip through as a candidate before anyTaskRelevant flipped true).
+	type scanned struct {
+		entry         CatalogEntry
+		step          StepResult
+		eligibleSoFar bool // reachable, found, under budget — relevance checked in pass 2
+	}
+	var scans []scanned
+	anyTaskRelevant := false
 
 	for _, entry := range catalog {
 		taskMatch := strings.Contains(taskLower, entry.SearchTerm) ||
@@ -140,7 +167,7 @@ func Run(task string, budgetRupees int) Result {
 		endpoint := merchants[entry.MerchantEnvVar]
 		if endpoint == "" {
 			step.Configured = false
-			result.Steps = append(result.Steps, step)
+			scans = append(scans, scanned{entry: entry, step: step})
 			continue
 		}
 		step.Configured = true
@@ -150,14 +177,14 @@ func Run(task string, budgetRupees int) Result {
 		if err != nil {
 			step.Reachable = false
 			step.Error = err.Error()
-			result.Steps = append(result.Steps, step)
+			scans = append(scans, scanned{entry: entry, step: step})
 			continue
 		}
 		step.Reachable = true
 
 		if len(products) == 0 {
 			step.Error = "no results"
-			result.Steps = append(result.Steps, step)
+			scans = append(scans, scanned{entry: entry, step: step})
 			continue
 		}
 
@@ -182,22 +209,31 @@ func Run(task string, budgetRupees int) Result {
 		if !step.UnderBudget {
 			step.Rejected = true
 			step.RejectReason = fmt.Sprintf("Rs.%d exceeds budget Rs.%d", entry.Product.UnitPriceRupees, budgetRupees)
-			result.Steps = append(result.Steps, step)
+			scans = append(scans, scanned{entry: entry, step: step})
 			continue
 		}
 
-		// The task named specific item(s) by keyword — an unrelated in-budget
-		// item must never win by default. Reject it explicitly instead of
-		// silently letting it become the only candidate.
+		scans = append(scans, scanned{entry: entry, step: step, eligibleSoFar: true})
+	}
+
+	// Pass 2: now that anyTaskRelevant is fully known, finalize each step
+	// and build the real candidate list. An unrelated in-budget item is
+	// never eligible once the task named something specific.
+	var candidates []candidate
+	for _, s := range scans {
+		step := s.step
+		if step.Rejected || !s.eligibleSoFar {
+			result.Steps = append(result.Steps, step)
+			continue
+		}
 		if anyTaskRelevant && !step.TaskMatch {
 			step.Rejected = true
 			step.RejectReason = fmt.Sprintf("not relevant to task %q", task)
 			result.Steps = append(result.Steps, step)
 			continue
 		}
-
 		result.Steps = append(result.Steps, step)
-		candidates = append(candidates, candidate{entry: entry, taskMatch: step.TaskMatch})
+		candidates = append(candidates, candidate{entry: s.entry, taskMatch: step.TaskMatch})
 	}
 
 	var best *candidate
